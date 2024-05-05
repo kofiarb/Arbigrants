@@ -1,13 +1,13 @@
 {{ config
 (
     materialized = 'incremental',
-    unique_key = ['date', 'category']
+    unique_key = ['day', 'category']
 )
 }}
 
 with total AS (
 SELECT 
-TO_VARCHAR(DATE_TRUNC('day',BLOCK_TIMESTAMP), 'YYYY-MM-DD') AS date,
+TO_VARCHAR(DATE_TRUNC('day',BLOCK_TIMESTAMP), 'YYYY-MM-DD') AS day,
 'total' as category,
 COUNT(DISTINCT FROM_ADDRESS) AS active_wallets
 FROM {{ source('arbitrum_raw', 'transactions') }}
@@ -20,7 +20,7 @@ GROUP BY 1,2
 
 , grantees AS (
 SELECT 
-TO_VARCHAR(DATE_TRUNC('day',BLOCK_TIMESTAMP), 'YYYY-MM-DD') AS date,
+TO_VARCHAR(DATE_TRUNC('day',BLOCK_TIMESTAMP), 'YYYY-MM-DD') AS day,
 'grantees' as category,
 COUNT(DISTINCT FROM_ADDRESS) AS active_wallets
 FROM {{ source('arbitrum_raw', 'transactions') }} t

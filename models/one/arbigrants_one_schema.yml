@@ -8,11 +8,11 @@ models:
     description: "Total and grantee active wallets"
     tests:
       - unique:
-          column_name: "(day || '-' || category)"
+          column_name: "(date || '-' || category)"
     columns:
       - &day
-        name: day
-        description: "day " 
+        name: date
+        description: "date" 
       - &category
         name: category
         description: "category of wallet"
