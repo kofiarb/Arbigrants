@@ -2,7 +2,7 @@ version: 2
 
 models:
 
-  - name: arbigrants_one_active_wallets
+  - name: arbigrants_one_day_active_wallets
     meta:
       blockchain: arbitrum_one
     description: "Total and grantee active wallets"
@@ -12,7 +12,7 @@ models:
     columns:
       - &day
         name: day
-        description: " 
+        description: "day " 
       - &category
         name: category
         description: "category of wallet"
