@@ -60,7 +60,7 @@ INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_CONTRACTS c
 ON c.CONTRACT_ADDRESS = t.TO_ADDRESS
 AND BLOCK_TIMESTAMP < CURRENT_DATE
 AND BLOCK_TIMESTAMP >= CURRENT_DATE - interval '7 day'
-INNER JOINARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m
+INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m
 ON m.NAME = c.NAME 
 AND m.chain = 'Arbitrum One')
 
@@ -100,13 +100,13 @@ ON m.NAME = c.NAME
 AND m.chain = 'Arbitrum One')
 
 SELECT 
-grantee_week_active_wallets AS week_active_wallets,
-grantee_week_active_wallets/all_week_active_wallets AS pct_week_active_wallets,
-grantee_week_transactions as week_transactions,
-grantee_week_transactions/all_week_transactions as pct_week_transactions,
-grantee_week_gas_spend as week_gas_spend,
-grantee_week_gas_spend/all_week_gas_spend as pct_week_gas_spend
+grantee_month_active_wallets AS month_active_wallets,
+grantee_month_active_wallets/all_month_active_wallets AS pct_month_active_wallets,
+grantee_month_transactions as month_transactions,
+grantee_month_transactions/all_month_transactions as pct_month_transactions,
+grantee_month_gas_spend as month_gas_spend,
+grantee_month_gas_spend/all_month_gas_spend as pct_month_gas_spend
 FROM all_txns, grantee_txns
-),
+)
 
 SELECT * FROM stats_24h, stats_7d, stats_1m
