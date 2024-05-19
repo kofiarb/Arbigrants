@@ -1,7 +1,6 @@
 version: 2
 
 models:
-
   - name: arbigrants_one_day_active_wallets
     meta:
       blockchain: arbitrum_one
