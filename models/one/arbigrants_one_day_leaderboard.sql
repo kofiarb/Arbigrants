@@ -22,9 +22,9 @@ aggregated_data AS (
         SUM(CASE WHEN t.BLOCK_TIMESTAMP >= ts.one_period_ago THEN ((t.RECEIPT_EFFECTIVE_GAS_PRICE * t.RECEIPT_GAS_USED)/1e18) END) AS gas_spend_current,
         SUM(CASE WHEN t.BLOCK_TIMESTAMP < ts.one_period_ago AND t.BLOCK_TIMESTAMP >= ts.two_period_ago THEN ((t.RECEIPT_EFFECTIVE_GAS_PRICE * t.RECEIPT_GAS_USED)/1e18) END) AS gas_spend_previous
     FROM {{ source('arbitrum_raw', 'transactions') }} t  
-    INNER JOIN {{ ref('arbigrants_labels_project_contracts') }} l
+    INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_CONTRACTS l
     ON t.TO_ADDRESS = l.CONTRACT_ADDRESS
-    INNER JOIN {{ ref('arbigrants_labels_project_metadata') }} m
+    INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m
     ON m.NAME = l.NAME 
     AND m.CHAIN = 'Arbitrum One'
     CROSS JOIN time_settings ts

@@ -24,7 +24,7 @@ TO_VARCHAR(DATE_TRUNC('day',BLOCK_TIMESTAMP), 'YYYY-MM-DD') AS date,
 'grantees' as category,
 COUNT(DISTINCT FROM_ADDRESS) AS active_wallets
 FROM {{ source('arbitrum_raw', 'transactions') }} t
-INNER JOIN {{ ref('arbigrants_labels_project_contracts') }} c
+INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_CONTRACTS c
 ON c.CONTRACT_ADDRESS = t.TO_ADDRESS
 AND BLOCK_TIMESTAMP < DATE_TRUNC('day',CURRENT_DATE())
 {% if is_incremental() %}
