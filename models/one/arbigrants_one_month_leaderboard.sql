@@ -30,7 +30,7 @@ aggregated_data AS (
     AND m.CHAIN = 'Arbitrum One'
     CROSS JOIN time_settings ts
     WHERE t.BLOCK_TIMESTAMP >= ts.two_period_ago
-    GROUP BY 1,2,3
+    GROUP BY 1,2,3,4
 )
 
 SELECT
