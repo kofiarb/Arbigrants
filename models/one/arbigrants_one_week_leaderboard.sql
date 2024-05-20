@@ -15,6 +15,7 @@ aggregated_data AS (
         l.NAME AS project,
         m.CATEGORY,
         m.LLAMA_SLUG AS slug,
+        m.LOGO,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= ts.one_period_ago AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.HASH END) AS txns_current,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP < ts.one_period_ago AND t.BLOCK_TIMESTAMP >= ts.two_period_ago THEN t.HASH END) AS txns_previous,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= ts.one_period_ago AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.FROM_ADDRESS END) AS active_accounts_current,
@@ -36,6 +37,7 @@ SELECT
 project,
 category,
 slug,
+logo,
 ad.gas_spend_current as ETH_FEES,
 CASE 
     WHEN ad.gas_spend_previous > 0 THEN (100 * (ad.gas_spend_current - ad.gas_spend_previous) / ad.gas_spend_previous) 
