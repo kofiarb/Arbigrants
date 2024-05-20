@@ -15,6 +15,9 @@ WHERE BLOCK_TIMESTAMP < DATE_TRUNC('month',CURRENT_DATE())
 {% if is_incremental() %}
 AND BLOCK_TIMESTAMP >= DATE_TRUNC('month',CURRENT_DATE()) - interval '2 month' 
 {% endif %}
+{% if not is_incremental() %}
+AND BLOCK_TIMESTAMP >= to_timestamp('2023-03-01', 'yyyy-MM-dd')
+{% endif %}
 GROUP BY 1,2
 )
 
@@ -29,6 +32,9 @@ ON c.CONTRACT_ADDRESS = t.TO_ADDRESS
 AND BLOCK_TIMESTAMP < DATE_TRUNC('month',CURRENT_DATE())
 {% if is_incremental() %}
 AND BLOCK_TIMESTAMP >= DATE_TRUNC('month',CURRENT_DATE()) - interval '2 month' 
+{% endif %}
+{% if not is_incremental() %}
+AND BLOCK_TIMESTAMP >= to_timestamp('2023-03-01', 'yyyy-MM-dd')
 {% endif %}
 GROUP BY 1,2
 )
