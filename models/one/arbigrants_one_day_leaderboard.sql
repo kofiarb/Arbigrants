@@ -16,13 +16,13 @@ aggregated_data AS (
         m.CATEGORY,
         m.LLAMA_SLUG AS slug,
         m.LOGO,
+        COALESCE(h.TOTAL_LIQUIDITY_USD,0) AS TVL,        
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= ts.one_period_ago AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.HASH END) AS txns_current,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP < ts.one_period_ago AND t.BLOCK_TIMESTAMP >= ts.two_period_ago THEN t.HASH END) AS txns_previous,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= ts.one_period_ago AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.FROM_ADDRESS END) AS active_accounts_current,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP < ts.one_period_ago AND t.BLOCK_TIMESTAMP >= ts.two_period_ago THEN t.FROM_ADDRESS END) AS active_accounts_previous,
         SUM(CASE WHEN t.BLOCK_TIMESTAMP >= ts.one_period_ago THEN ((t.RECEIPT_EFFECTIVE_GAS_PRICE * t.RECEIPT_GAS_USED)/1e18) END) AS gas_spend_current,
-        SUM(CASE WHEN t.BLOCK_TIMESTAMP < ts.one_period_ago AND t.BLOCK_TIMESTAMP >= ts.two_period_ago THEN ((t.RECEIPT_EFFECTIVE_GAS_PRICE * t.RECEIPT_GAS_USED)/1e18) END) AS gas_spend_previous,
-        h.TOTAL_LIQUIDITY_USD AS TVL
+        SUM(CASE WHEN t.BLOCK_TIMESTAMP < ts.one_period_ago AND t.BLOCK_TIMESTAMP >= ts.two_period_ago THEN ((t.RECEIPT_EFFECTIVE_GAS_PRICE * t.RECEIPT_GAS_USED)/1e18) END) AS gas_spend_previous
     FROM {{ source('arbitrum_raw', 'transactions') }} t  
     INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_CONTRACTS l
     ON t.TO_ADDRESS = l.CONTRACT_ADDRESS
@@ -35,7 +35,7 @@ aggregated_data AS (
     AND h.PROTOCOL_NAME = LLAMA_NAME
     CROSS JOIN time_settings ts
     WHERE t.BLOCK_TIMESTAMP >= ts.two_period_ago
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3,4,5
 )
 
 SELECT
