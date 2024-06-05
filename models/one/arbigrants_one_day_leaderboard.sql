@@ -45,7 +45,7 @@ slug,
 logo,
 COALESCE(ad.gas_spend_current,0) as ETH_FEES,
 CASE 
-    WHEN ad.gas_spend_previous > 0 THEN (100 * (ad.gas_spend_current - ad.gas_spend_previous) / ad.gas_spend_previous) 
+    WHEN ad.gas_spend_previous > 0 THEN (100 * (COALESCE(ad.gas_spend_current,0) - COALESCE(ad.gas_spend_previous,0)) / COALESCE(ad.gas_spend_previous,0)) 
     ELSE 0 
 END as ETH_FEES_GROWTH,
 ad.txns_current as TRANSACTIONS,
