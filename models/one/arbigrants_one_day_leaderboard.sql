@@ -4,37 +4,36 @@
 )
 }}
 
-
 WITH time_settings AS (
     SELECT 
         CURRENT_DATE - INTERVAL '1 DAY' AS one_period_ago,
         CURRENT_DATE - INTERVAL '2 DAY' AS two_period_ago
-),
-aggregated_data AS (
+)
+
+, aggregated_data AS (
     SELECT 
-        l.NAME AS project,
+        m.NAME AS project,
         m.CATEGORY,
         m.LLAMA_SLUG AS slug,
         m.LOGO,
         COALESCE(h.TOTAL_LIQUIDITY_USD,0) AS TVL,        
-        COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= ts.one_period_ago AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.HASH END) AS txns_current,
-        COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP < ts.one_period_ago AND t.BLOCK_TIMESTAMP >= ts.two_period_ago THEN t.HASH END) AS txns_previous,
-        COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= ts.one_period_ago AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.FROM_ADDRESS END) AS active_accounts_current,
-        COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP < ts.one_period_ago AND t.BLOCK_TIMESTAMP >= ts.two_period_ago THEN t.FROM_ADDRESS END) AS active_accounts_previous,
-        SUM(CASE WHEN t.BLOCK_TIMESTAMP >= ts.one_period_ago THEN ((t.RECEIPT_EFFECTIVE_GAS_PRICE * t.RECEIPT_GAS_USED)/1e18) END) AS gas_spend_current,
-        SUM(CASE WHEN t.BLOCK_TIMESTAMP < ts.one_period_ago AND t.BLOCK_TIMESTAMP >= ts.two_period_ago THEN ((t.RECEIPT_EFFECTIVE_GAS_PRICE * t.RECEIPT_GAS_USED)/1e18) END) AS gas_spend_previous
-    FROM {{ source('arbitrum_raw', 'transactions') }} t  
-    INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_CONTRACTS l
-    ON t.TO_ADDRESS = l.CONTRACT_ADDRESS
-    INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m
+        COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.HASH END) AS txns_current,
+        COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP < (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP >= (SELECT two_period_ago FROM time_settings) THEN t.HASH END) AS txns_previous,
+        COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.FROM_ADDRESS END) AS active_accounts_current,
+        COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP < (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP >= (SELECT two_period_ago FROM time_settings) THEN t.FROM_ADDRESS END) AS active_accounts_previous,
+        SUM(CASE WHEN t.BLOCK_TIMESTAMP >= (SELECT one_period_ago FROM time_settings) THEN ((t.RECEIPT_EFFECTIVE_GAS_PRICE * t.RECEIPT_GAS_USED)/1e18) END) AS gas_spend_current,
+        SUM(CASE WHEN t.BLOCK_TIMESTAMP < (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP >= (SELECT two_period_ago FROM time_settings) THEN ((t.RECEIPT_EFFECTIVE_GAS_PRICE * t.RECEIPT_GAS_USED)/1e18) END) AS gas_spend_previous
+    FROM ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m  
+    LEFT JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_CONTRACTS l
     ON m.NAME = l.NAME 
-    AND m.CHAIN = 'Arbitrum One'
+    LEFT JOIN {{ source('arbitrum_raw', 'transactions') }} t  
+    ON t.TO_ADDRESS = l.CONTRACT_ADDRESS
+    AND t.BLOCK_TIMESTAMP >= (SELECT two_period_ago FROM time_settings)
     LEFT JOIN DEFILLAMA.TVL.HISTORICAL_TVL_PER_CHAIN h
     ON h.CHAIN = 'Arbitrum'
     AND h.DATE = current_date
     AND h.PROTOCOL_NAME = LLAMA_NAME
-    CROSS JOIN time_settings ts
-    WHERE t.BLOCK_TIMESTAMP >= ts.two_period_ago
+    WHERE m.CHAIN = 'Arbitrum One'
     GROUP BY 1,2,3,4,5
 )
 
@@ -60,4 +59,4 @@ CASE
 END as WALLETS_GROWTH,
 tvl
 FROM aggregated_data ad  
-ORDER BY ad.gas_spend_current DESC
+ORDER BY COALESCE(ad.gas_spend_current,0) DESC
