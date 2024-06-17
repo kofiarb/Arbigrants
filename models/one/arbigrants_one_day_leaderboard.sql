@@ -16,6 +16,7 @@ WITH time_settings AS (
         m.CATEGORY,
         m.LLAMA_SLUG AS slug,
         m.LOGO,
+        m.CHAIN,
         COALESCE(h.TOTAL_LIQUIDITY_USD,0) AS TVL,        
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.HASH END) AS txns_current,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP < (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP >= (SELECT two_period_ago FROM time_settings) THEN t.HASH END) AS txns_previous,
@@ -33,8 +34,8 @@ WITH time_settings AS (
     ON h.CHAIN = 'Arbitrum'
     AND h.DATE = current_date
     AND h.PROTOCOL_NAME = LLAMA_NAME
-    WHERE m.CHAIN = 'Arbitrum One'
-    GROUP BY 1,2,3,4,5
+    -- WHERE m.CHAIN = 'Arbitrum One'
+    GROUP BY 1,2,3,4,5,6
 )
 
 SELECT
@@ -42,6 +43,7 @@ project,
 category,
 slug,
 logo,
+chain,
 COALESCE(ad.gas_spend_current,0) as ETH_FEES,
 CASE 
     WHEN ad.gas_spend_previous > 0 THEN (100 * (COALESCE(ad.gas_spend_current,0) - COALESCE(ad.gas_spend_previous,0)) / COALESCE(ad.gas_spend_previous,0)) 
