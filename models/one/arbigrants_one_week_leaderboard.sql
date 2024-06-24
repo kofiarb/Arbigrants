@@ -18,7 +18,7 @@ WITH time_settings AS (
         m.LLAMA_SLUG AS slug,
         m.LOGO,
         m.CHAIN,
-        COALESCE(h.TOTAL_LIQUIDITY_USD,0) AS TVL,        
+        COALESCE(h.TOTAL_LIQUIDITY_USD,0) AS TVL,      
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.HASH END) AS txns_current,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP < (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP >= (SELECT two_period_ago FROM time_settings) THEN t.HASH END) AS txns_previous,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.FROM_ADDRESS END) AS active_accounts_current,
