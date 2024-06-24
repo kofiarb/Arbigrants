@@ -39,8 +39,28 @@ WITH time_settings AS (
     GROUP BY 1,2,3,4,5,6
 )
 
+, volume_data AS (
+    SELECT 
+    m.NAME AS project, 
+    COALESCE(SUM(d.TVL),SUM(de.TVL),SUM(o.TVL),0) AS volume,
+    FROM ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m  
+    LEFT JOIN DEFILLAMA.VOLUMES.HISTORICAL_DAILY_VOLUME_PER_PROTOCOL_DEXS d
+    ON d.CHAIN = 'arbitrum'
+    AND d.TIMESTAMP >= (SELECT one_period_ago FROM time_settings)
+    AND d.PROTOCOL = LLAMA_NAME
+    LEFT JOIN DEFILLAMA.VOLUMES.HISTORICAL_DAILY_VOLUME_PER_PROTOCOL_DERIVATIVES de
+    ON de.CHAIN = 'arbitrum'
+    AND de.TIMESTAMP >= (SELECT one_period_ago FROM time_settings)
+    AND de.PROTOCOL = LLAMA_NAME
+    LEFT JOIN DEFILLAMA.VOLUMES.HISTORICAL_DAILY_VOLUME_PER_PROTOCOL_OPTIONS o
+    ON o.CHAIN = 'arbitrum'
+    AND o.TIMESTAMP >= (SELECT one_period_ago FROM time_settings)
+    AND o.PROTOCOL = LLAMA_NAME
+    GROUP BY 1
+)
+
 SELECT
-project,
+ad.project,
 category,
 slug,
 logo,
@@ -60,6 +80,8 @@ CASE
     WHEN ad.active_accounts_previous > 0 THEN (100 * (ad.active_accounts_current - ad.active_accounts_previous) / ad.active_accounts_previous) 
     ELSE 0 
 END as WALLETS_GROWTH,
-tvl
+tvl,
+volume
 FROM aggregated_data ad  
+LEFT JOIN volume_data vd ON vd.project = ad.project
 ORDER BY COALESCE(ad.gas_spend_current,0) DESC
