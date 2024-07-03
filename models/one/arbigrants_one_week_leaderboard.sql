@@ -100,10 +100,10 @@ SELECT * FROM main_query
 UNION ALL
 SELECT
     'TOTAL' as project,
-    NULL as category,
-    NULL as slug,
-    NULL as logo,
-    NULL as chain,
+    'Total' as category,
+    'total' as slug,
+    'https://file.notion.so/f/f/80206c3c-8bc5-49a2-b0cd-756884a06880/5e929707-8bae-4948-b839-d101715a407d/AF_logomark.png' as logo,
+    'Offchain' as chain,
     SUM(ETH_FEES) as ETH_FEES,
     0 as ETH_FEES_GROWTH,
     SUM(TRANSACTIONS) as TRANSACTIONS,
