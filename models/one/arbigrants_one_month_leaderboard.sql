@@ -102,7 +102,7 @@ SELECT
     'TOTAL' as project,
     'Total' as category,
     'total' as slug,
-    'https://file.notion.so/f/f/80206c3c-8bc5-49a2-b0cd-756884a06880/5e929707-8bae-4948-b839-d101715a407d/AF_logomark.png' as logo,
+    'https://aefsitlkirjpwxayubwd.supabase.co/storage/v1/object/public/Arbigrants%20logos/AF_logomark.png?t=2024-07-03T10%3A53%3A13.645Z' as logo,
     'Offchain' as chain,
     SUM(ETH_FEES) as ETH_FEES,
     0 as ETH_FEES_GROWTH,
