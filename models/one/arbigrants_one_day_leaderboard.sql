@@ -16,8 +16,7 @@ WITH time_settings AS (
         m.CATEGORY,
         m.LLAMA_SLUG AS slug,
         m.LOGO,
-        m.CHAIN,
-        COALESCE(h.TOTAL_LIQUIDITY_USD,0) AS TVL,        
+        m.CHAIN,   
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.HASH END) AS txns_current,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP < (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP >= (SELECT two_period_ago FROM time_settings) THEN t.HASH END) AS txns_previous,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.FROM_ADDRESS END) AS active_accounts_current,
@@ -30,12 +29,20 @@ WITH time_settings AS (
     LEFT JOIN {{ source('arbitrum_raw', 'transactions') }} t  
     ON t.TO_ADDRESS = l.CONTRACT_ADDRESS
     AND t.BLOCK_TIMESTAMP >= (SELECT two_period_ago FROM time_settings)
-    LEFT JOIN DEFILLAMA.TVL.HISTORICAL_TVL_PER_CHAIN h
+    GROUP BY 1,2,3,4,5
+)
+
+, tvl_data AS (
+    SELECT 
+    m.NAME AS project,
+    SUM(h.TOTAL_LIQUIDITY_USD) AS TVL
+    FROM ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m  
+    INNER JOIN DEFILLAMA.TVL.HISTORICAL_TVL_PER_CHAIN h
     ON h.CHAIN = 'Arbitrum'
     AND h.DATE = current_date
-    AND h.PROTOCOL_NAME = LLAMA_NAME
-    -- WHERE m.CHAIN = 'Arbitrum One'
-    GROUP BY 1,2,3,4,5,6
+    AND LLAMA_NAME != ''
+    AND h.PROTOCOL_NAME LIKE LLAMA_NAME || '%'
+    GROUP BY 1
 )
 
 , volume_data AS (
@@ -79,8 +86,9 @@ CASE
     WHEN ad.active_accounts_previous > 0 THEN (100 * (ad.active_accounts_current - ad.active_accounts_previous) / ad.active_accounts_previous) 
     ELSE 0 
 END as WALLETS_GROWTH,
-tvl,
+COALESCE(tvl,0) as tvl,
 volume
 FROM aggregated_data ad  
 LEFT JOIN volume_data vd ON vd.project = ad.project
+LEFT JOIN tvl_data tv ON tv.project = ad.project
 ORDER BY COALESCE(ad.gas_spend_current,0) DESC
