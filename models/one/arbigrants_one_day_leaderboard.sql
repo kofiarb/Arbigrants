@@ -65,6 +65,7 @@ WITH time_settings AS (
     GROUP BY 1
 )
 
+, main_query AS (
 SELECT
 ad.project,
 category,
@@ -91,4 +92,27 @@ volume
 FROM aggregated_data ad  
 LEFT JOIN volume_data vd ON vd.project = ad.project
 LEFT JOIN tvl_data tv ON tv.project = ad.project
-ORDER BY COALESCE(ad.gas_spend_current,0) DESC
+-- ORDER BY COALESCE(ad.gas_spend_current,0) DESC
+)
+
+
+SELECT * FROM main_query
+UNION ALL
+SELECT
+    'TOTAL' as project,
+    NULL as category,
+    NULL as slug,
+    NULL as logo,
+    NULL as chain,
+    SUM(ETH_FEES) as ETH_FEES,
+    0 as ETH_FEES_GROWTH,
+    SUM(TRANSACTIONS) as TRANSACTIONS,
+    0 as TRANSACTIONS_GROWTH,
+    SUM(WALLETS) as WALLETS,
+    0 as WALLETS_GROWTH,
+    SUM(tvl) as tvl,
+    SUM(volume) as volume
+FROM main_query
+ORDER BY 
+    CASE WHEN project = 'TOTAL' THEN 1 ELSE 0 END,
+    ETH_FEES DESC
