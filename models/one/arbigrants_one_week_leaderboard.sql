@@ -40,7 +40,7 @@ WITH time_settings AS (
     FROM ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m  
     INNER JOIN DEFILLAMA.TVL.HISTORICAL_TVL_PER_CHAIN h
     ON h.CHAIN = 'Arbitrum'
-    AND h.DATE = current_date
+    AND h.NEAREST_DATE = current_date
     AND LLAMA_NAME != ''
     AND h.PROTOCOL_NAME LIKE LLAMA_NAME || '%'
     GROUP BY 1
@@ -89,10 +89,12 @@ CASE
     ELSE 0 
 END as WALLETS_GROWTH,
 COALESCE(tvl,0) as tvl,
-volume
+COALESCE(volume,0) as volume,
+m.completion
 FROM aggregated_data ad  
 LEFT JOIN volume_data vd ON vd.project = ad.project
 LEFT JOIN tvl_data tv ON tv.project = ad.project
+LEFT JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_MILESTONES m ON m.name = ad.project
 -- ORDER BY COALESCE(ad.gas_spend_current,0) DESC
 )
 
@@ -111,7 +113,8 @@ SELECT
     SUM(WALLETS) as WALLETS,
     0 as WALLETS_GROWTH,
     SUM(tvl) as tvl,
-    SUM(volume) as volume
+    SUM(volume) as volume,
+    '0%' as completion
 FROM main_query
 ORDER BY 
     CASE WHEN project = 'TOTAL' THEN 1 ELSE 0 END,
