@@ -40,7 +40,7 @@ WITH time_settings AS (
     FROM ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m  
     INNER JOIN DEFILLAMA.TVL.HISTORICAL_TVL_PER_CHAIN h
     ON h.CHAIN = 'Arbitrum'
-    AND h.NEAREST_DATE = current_date
+    AND date_trunc('day',h.NEAREST_DATE) = current_date
     AND LLAMA_NAME != ''
     AND h.PROTOCOL_NAME LIKE LLAMA_NAME || '%'
     GROUP BY 1
