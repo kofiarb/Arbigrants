@@ -1,0 +1,16 @@
+{{ config
+(
+    materialized = 'table'
+)
+}}
+
+SELECT 
+TO_VARCHAR(DATE_TRUNC('day',BLOCK_TIMESTAMP), 'YYYY-MM-DD') AS date,
+c.NAME,
+SUM((RECEIPT_EFFECTIVE_GAS_PRICE * RECEIPT_GAS_USED)/1e18) AS gas_spend
+FROM {{ source('arbitrum_raw', 'transactions') }} t
+INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_CONTRACTS c
+ON c.CONTRACT_ADDRESS = t.TO_ADDRESS
+AND BLOCK_TIMESTAMP < DATE_TRUNC('day',CURRENT_DATE())
+AND BLOCK_TIMESTAMP >= to_timestamp('2023-03-01', 'yyyy-MM-dd')
+GROUP BY 1,2
