@@ -44,6 +44,32 @@ AND DATE >= to_timestamp('2023-03-01', 'yyyy-MM-dd')
 GROUP BY 1,2
 )
 
+, prices AS (
+SELECT 
+DATE_TRUNC('day',HOUR) AS date,
+LAST_VALUE(USD_PRICE) OVER (PARTITION BY DATE_TRUNC('day', HOUR) ORDER BY HOUR) AS USD_PRICE
+FROM COMMON.PRICES.TOKEN_PRICES_HOURLY_EASY
+WHERE SYMBOL = 'ETH'
+{% if is_incremental() %}
+AND HOUR >= CURRENT_DATE() - interval '3 day' 
+{% endif %}
+{% if not is_incremental() %}
+AND HOUR >= to_timestamp('2023-03-01', 'yyyy-MM-dd')
+{% endif %}
+QUALIFY ROW_NUMBER() OVER (PARTITION BY DATE_TRUNC('week', DATE) ORDER BY HOUR DESC) = 1
+)
+
+, merged AS (
 SELECT * FROM total
 UNION ALL 
 SELECT * FROM grantees
+)
+
+SELECT 
+m.DATE,
+m.CATEGORY,
+m.TVL,
+m.TVL/p.USD_PRICE AS TVL_ETH
+FROM merged m
+LEFT JOIN prices p
+ON m.DATE = p.DATE
