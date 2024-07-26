@@ -88,12 +88,12 @@ CASE
     ELSE 0 
 END as WALLETS_GROWTH,
 COALESCE(tvl,0) as tvl,
-COALESCE(volume,0) as volume,
-m.completion
+COALESCE(volume,0) as volume
+-- m.completion
 FROM aggregated_data ad  
 LEFT JOIN volume_data vd ON vd.project = ad.project
 LEFT JOIN tvl_data tv ON tv.project = ad.project
-LEFT JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_MILESTONES m ON m.name = ad.project
+-- LEFT JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_MILESTONES m ON m.name = ad.project
 -- ORDER BY COALESCE(ad.gas_spend_current,0) DESC
 )
 
@@ -113,8 +113,8 @@ SELECT
     SUM(WALLETS) as WALLETS,
     0 as WALLETS_GROWTH,
     SUM(tvl) as tvl,
-    SUM(volume) as volume,
-    '0%' as completion
+    SUM(volume) as volume
+    -- '0%' as completion
 FROM main_query
 ORDER BY 
     CASE WHEN project = 'TOTAL' THEN 1 ELSE 0 END,
