@@ -4,21 +4,8 @@
 )
 }}
 
-with total AS (
 SELECT 
 TO_VARCHAR(DATE_TRUNC('day',BLOCK_TIMESTAMP), 'YYYY-MM-DD') AS date,
-'total' as category,
-COUNT(DISTINCT FROM_ADDRESS) AS active_wallets
-FROM {{ source('arbitrum_raw', 'transactions') }}
-WHERE BLOCK_TIMESTAMP < DATE_TRUNC('day',CURRENT_DATE())
-AND BLOCK_TIMESTAMP >= CURRENT_DATE() - interval '13 months'
-GROUP BY 1,2
-)
-
-, grantees AS (
-SELECT 
-TO_VARCHAR(DATE_TRUNC('day',BLOCK_TIMESTAMP), 'YYYY-MM-DD') AS date,
-'grantees' as category,
 COUNT(DISTINCT FROM_ADDRESS) AS active_wallets
 FROM {{ source('arbitrum_raw', 'transactions') }} t
 INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_CONTRACTS c
@@ -31,9 +18,5 @@ AND t.BLOCK_TIMESTAMP >= CASE
     WHEN TRY_TO_TIMESTAMP(m.GRANT_DATE, 'MM/DD/YYYY') IS NOT NULL THEN TRY_TO_TIMESTAMP(m.GRANT_DATE, 'MM/DD/YYYY')
     ELSE TO_TIMESTAMP('2023-03-01', 'YYYY-MM-DD')
 END
-GROUP BY 1,2
-)
-
-SELECT * FROM total
-UNION ALL 
-SELECT * FROM grantees
+AND m.CHAIN = 'Arbitrum One'
+GROUP BY 1

@@ -4,10 +4,10 @@ models:
   - name: arbigrants_one_day_active_wallets
     meta:
       blockchain: arbitrum_one
-    description: "Total and grantee active wallets"
+    description: "Grantee active wallets"
     tests:
       - unique:
-          column_name: "(date || '-' || category)"
+          column_name: "date"
     columns:
       - &day
         name: date
@@ -17,4 +17,4 @@ models:
         description: "category of wallet"
       - &active_wallets
         name: active_wallets
-        description: "quantityof active wallets"
+        description: "quantity of active wallets"

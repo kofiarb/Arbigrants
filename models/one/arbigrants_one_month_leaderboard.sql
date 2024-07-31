@@ -30,6 +30,7 @@ WITH time_settings AS (
     LEFT JOIN {{ source('arbitrum_raw', 'transactions') }} t  
     ON t.TO_ADDRESS = l.CONTRACT_ADDRESS
     AND t.BLOCK_TIMESTAMP >= (SELECT two_period_ago FROM time_settings)
+    WHERE m.CHAIN = 'Arbitrum One'
     GROUP BY 1,2,3,4,5
 )
 
@@ -43,6 +44,7 @@ WITH time_settings AS (
     AND date_trunc('day',h.NEAREST_DATE) = current_date
     AND LLAMA_NAME != ''
     AND h.PROTOCOL_NAME LIKE LLAMA_NAME || '%'
+    AND m.CHAIN = 'Arbitrum One'
     GROUP BY 1
 )
 
@@ -63,10 +65,10 @@ WITH time_settings AS (
     ON o.CHAIN = 'arbitrum'
     AND o.TIMESTAMP >= (SELECT one_period_ago FROM time_settings)
     AND o.PROTOCOL = LLAMA_SLUG
+    WHERE m.CHAIN = 'Arbitrum One'
     GROUP BY 1
 )
 
-, main_query AS (
 SELECT
 ad.project,
 category,
@@ -90,33 +92,7 @@ CASE
 END as WALLETS_GROWTH,
 COALESCE(tvl,0) as tvl,
 COALESCE(volume,0) as volume
--- m.completion
 FROM aggregated_data ad  
 LEFT JOIN volume_data vd ON vd.project = ad.project
 LEFT JOIN tvl_data tv ON tv.project = ad.project
--- LEFT JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_MILESTONES m ON m.name = ad.project
--- ORDER BY COALESCE(ad.gas_spend_current,0) DESC
-)
-
-SELECT * FROM main_query
-UNION ALL
-SELECT
-    'TOTAL' as project,
-    'Total' as category,
-    'total' as slug,
-    'https://aefsitlkirjpwxayubwd.supabase.co/storage/v1/object/public/Arbigrants%20logos/AF_logomark.png?t=2024-07-03T10%3A53%3A13.645Z' as logo,
-    'Offchain' as chain,
-    SUM(ETH_FEES) as ETH_FEES,
-    0 as ETH_FEES_GROWTH,
-    SUM(TRANSACTIONS) as TRANSACTIONS,
-    0 as TRANSACTIONS_GROWTH,
-    SUM(WALLETS) as WALLETS,
-    0 as WALLETS_GROWTH,
-    SUM(tvl) as tvl,
-    SUM(volume) as volume
-    -- '0%' as completion
-FROM main_query
-ORDER BY 
-    CASE WHEN project = 'TOTAL' THEN 1 ELSE 0 END,
-    WALLETS DESC
 

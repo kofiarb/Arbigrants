@@ -14,6 +14,7 @@ WITH cte AS (
     AND LLAMA_NAME != ''
     AND h.PROTOCOL_NAME LIKE LLAMA_NAME || '%'
     AND DATE = CURRENT_DATE
+    AND m.CHAIN = 'Arbitrum One'
 GROUP BY 1
 ),
 total_tvl AS (

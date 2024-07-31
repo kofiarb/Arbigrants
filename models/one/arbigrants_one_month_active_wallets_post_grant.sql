@@ -1,27 +1,9 @@
 {{ config
 (
-    materialized = 'incremental',
-    unique_key = ['date', 'category']
+    materialized = 'table'
 )
 }}
 
-with total AS (
-SELECT 
-TO_VARCHAR(DATE_TRUNC('month',BLOCK_TIMESTAMP), 'YYYY-MM-DD') AS date,
-'total' as category,
-COUNT(DISTINCT FROM_ADDRESS) AS active_wallets
-FROM {{ source('arbitrum_raw', 'transactions') }}
-WHERE BLOCK_TIMESTAMP < DATE_TRUNC('month',CURRENT_DATE())
-{% if is_incremental() %}
-AND BLOCK_TIMESTAMP >= DATE_TRUNC('month',CURRENT_DATE()) - interval '2 month' 
-{% endif %}
-{% if not is_incremental() %}
-AND BLOCK_TIMESTAMP >= to_timestamp('2023-03-01', 'yyyy-MM-dd')
-{% endif %}
-GROUP BY 1,2
-)
-
-, grantees AS (
 SELECT 
 TO_VARCHAR(DATE_TRUNC('month',BLOCK_TIMESTAMP), 'YYYY-MM-DD') AS date,
 'grantees' as category,
@@ -30,21 +12,12 @@ FROM {{ source('arbitrum_raw', 'transactions') }} t
 INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_CONTRACTS c
 ON c.CONTRACT_ADDRESS = t.TO_ADDRESS
 AND BLOCK_TIMESTAMP < DATE_TRUNC('month',CURRENT_DATE())
-{% if is_incremental() %}
-AND BLOCK_TIMESTAMP >= DATE_TRUNC('month',CURRENT_DATE()) - interval '2 month' 
-{% endif %}
-{% if not is_incremental() %}
-AND BLOCK_TIMESTAMP >= to_timestamp('2023-03-01', 'yyyy-MM-dd')
-{% endif %}
+AND BLOCK_TIMESTAMP >= CURRENT_DATE() - interval '13 months'
 INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m
 ON c.NAME = m.NAME
 AND t.BLOCK_TIMESTAMP >= CASE
     WHEN TRY_TO_TIMESTAMP(m.GRANT_DATE, 'MM/DD/YYYY') IS NOT NULL THEN TRY_TO_TIMESTAMP(m.GRANT_DATE, 'MM/DD/YYYY')
     ELSE TO_TIMESTAMP('2023-03-01', 'YYYY-MM-DD')
 END
+AND m.CHAIN = 'Arbitrum One'
 GROUP BY 1,2
-)
-
-SELECT * FROM total
-UNION ALL 
-SELECT * FROM grantees
