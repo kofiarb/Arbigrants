@@ -1,7 +1,6 @@
 {{ config
 (
-    materialized = 'incremental',
-    unique_key = ['date', 'category']
+    materialized = 'table'
 )
 }}
 
@@ -12,12 +11,7 @@ TO_VARCHAR(DATE_TRUNC('day',BLOCK_TIMESTAMP), 'YYYY-MM-DD') AS date,
 COUNT(DISTINCT FROM_ADDRESS) AS active_wallets
 FROM {{ source('arbitrum_raw', 'transactions') }}
 WHERE BLOCK_TIMESTAMP < DATE_TRUNC('day',CURRENT_DATE())
-{% if is_incremental() %}
-AND BLOCK_TIMESTAMP >= CURRENT_DATE() - interval '3 day' 
-{% endif %}
-{% if not is_incremental() %}
-AND BLOCK_TIMESTAMP >= to_timestamp('2023-03-01', 'yyyy-MM-dd')
-{% endif %}
+AND BLOCK_TIMESTAMP >= CURRENT_DATE() - interval '13 months'
 GROUP BY 1,2
 )
 
@@ -30,12 +24,7 @@ FROM {{ source('arbitrum_raw', 'transactions') }} t
 INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_CONTRACTS c
 ON c.CONTRACT_ADDRESS = t.TO_ADDRESS
 AND BLOCK_TIMESTAMP < DATE_TRUNC('day',CURRENT_DATE())
-{% if is_incremental() %}
-AND BLOCK_TIMESTAMP >= CURRENT_DATE() - interval '3 day' 
-{% endif %}
-{% if not is_incremental() %}
-AND BLOCK_TIMESTAMP >= to_timestamp('2023-03-01', 'yyyy-MM-dd')
-{% endif %}
+AND BLOCK_TIMESTAMP >= CURRENT_DATE() - interval '13 months'
 INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m
 ON c.NAME = m.NAME
 AND t.BLOCK_TIMESTAMP >= CASE
