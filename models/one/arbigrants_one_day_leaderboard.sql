@@ -35,8 +35,13 @@ WITH time_settings AS (
 
 , tvl_data AS (
     SELECT 
+    project,
+    SUM(TVL) AS TVL
+    FROM (
+    SELECT 
     m.NAME AS project,
-    SUM(h.TOTAL_LIQUIDITY_USD) AS TVL
+    h.TOTAL_LIQUIDITY_USD AS TVL,
+    ROW_NUMBER() OVER (PARTITION BY h.PROTOCOL_NAME ORDER BY h.NEAREST_DATE DESC) AS rn
     FROM ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m  
     INNER JOIN DEFILLAMA.TVL.HISTORICAL_TVL_PER_CHAIN h
     ON h.CHAIN = 'Arbitrum'
@@ -44,6 +49,8 @@ WITH time_settings AS (
     AND LLAMA_NAME != ''
     AND h.PROTOCOL_NAME LIKE LLAMA_NAME || '%'
     AND m.CHAIN = 'Arbitrum One'
+    )
+    WHERE rn = 1
     GROUP BY 1
 )
 
