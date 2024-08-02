@@ -8,7 +8,7 @@ WITH cte AS (
   SELECT 
     NAME,
     TVL
-  FROM {{ ref('arbigrants_one_day_tvl_by_project') }}
+  FROM {{ ref('arbigrants_nova_day_tvl_by_project') }}
   WHERE DATE = TO_VARCHAR(DATE_TRUNC('day',CURRENT_DATE - INTERVAL '1 DAY'), 'YYYY-MM-DD')
 ),
 total_tvl AS (
