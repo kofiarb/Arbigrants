@@ -29,7 +29,7 @@ WITH time_settings AS (
     LEFT JOIN {{ source('arbitrum_raw', 'transactions') }} t  
     ON t.TO_ADDRESS = l.CONTRACT_ADDRESS
     AND t.BLOCK_TIMESTAMP >= (SELECT two_period_ago FROM time_settings)
-    WHERE m.CHAIN = 'Arbitrum One'
+    WHERE m.CHAIN IN ('Arbitrum One', 'Offchain')
     GROUP BY 1,2,3,4,5
 )
 
@@ -48,7 +48,7 @@ WITH time_settings AS (
     AND date_trunc('day',h.NEAREST_DATE) = current_date
     AND LLAMA_NAME != ''
     AND h.PROTOCOL_NAME LIKE LLAMA_NAME || '%'
-    AND m.CHAIN = 'Arbitrum One'
+    AND m.CHAIN IN ('Arbitrum One', 'Offchain')
     )
     WHERE rn = 1
     GROUP BY 1
@@ -71,7 +71,7 @@ WITH time_settings AS (
     ON o.CHAIN = 'arbitrum'
     AND o.TIMESTAMP >= (SELECT one_period_ago FROM time_settings)
     AND o.PROTOCOL = LLAMA_SLUG
-    WHERE m.CHAIN = 'Arbitrum One'
+    WHERE m.CHAIN IN ('Arbitrum One', 'Offchain')
     GROUP BY 1
 )
 
