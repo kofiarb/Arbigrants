@@ -124,8 +124,8 @@ WHERE rn = 1
 )
 
 SELECT 
-tvl_grantees,
-tvl_grantees/tvl_all as pct_tvl
+COALESCE(tvl_grantees, 0) as tvl_grantees,
+COALESCE(tvl_grantees/tvl_all, 0) as pct_tvl
 FROM all_tvl, grantee_tvl
 )
 
