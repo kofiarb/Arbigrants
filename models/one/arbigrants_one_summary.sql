@@ -118,7 +118,7 @@ FROM (
     AND date_trunc('day',h.NEAREST_DATE) = current_date
     AND LLAMA_NAME != ''
     AND h.PROTOCOL_NAME LIKE LLAMA_NAME || '%'
-    AND m.CHAIN = 'Arbitrum One'
+    AND m.CHAIN IN ('Arbitrum One', 'Offchain', 'Arbitrum Orbit')
 )
 WHERE rn = 1
 )
