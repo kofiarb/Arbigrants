@@ -23,7 +23,7 @@ FROM (
         FROM ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m
         INNER JOIN DEFILLAMA.TVL.HISTORICAL_TVL_PER_CHAIN h
         ON h.CHAIN = 'Arbitrum'
-        AND m.CHAIN = 'Arbitrum One'
+        AND m.CHAIN IN ('Arbitrum One', 'Arbitrum Orbit')
         AND LLAMA_NAME != ''
         AND h.PROTOCOL_NAME LIKE LLAMA_NAME || '%'
         AND DATE >= CURRENT_DATE() - interval '13 months'
