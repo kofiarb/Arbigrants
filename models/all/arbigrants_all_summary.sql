@@ -36,7 +36,7 @@ FROM
     SUM((RECEIPT_EFFECTIVE_GAS_PRICE * RECEIPT_GAS_USED)/1e18) AS arbone_week_gas_spend
     FROM {{ source('arbitrum_raw', 'transactions') }} t   
     WHERE BLOCK_TIMESTAMP < CURRENT_DATE
-    AND BLOCK_TIMESTAMP >= CURRENT_DATE - interval '7 day')
+    AND BLOCK_TIMESTAMP >= CURRENT_DATE - interval '1 WEEK')
 
     , month_stats AS (
     SELECT 
