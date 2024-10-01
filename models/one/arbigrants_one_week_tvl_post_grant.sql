@@ -26,7 +26,7 @@ FROM (
         AND h.PROTOCOL_NAME LIKE LLAMA_NAME || '%'
         AND DATE < DATE_TRUNC('day',CURRENT_DATE())
         AND DATE >= CURRENT_DATE() - interval '13 months'
-        AND m.CHAIN = 'Arbitrum One'
+        AND m.CHAIN IN ('Arbitrum One', 'Arbitrum Orbit')
     )
     WHERE DATE >= CASE
         WHEN TRY_TO_TIMESTAMP(GRANT_DATE, 'MM/DD/YYYY') IS NOT NULL THEN TRY_TO_TIMESTAMP(GRANT_DATE, 'MM/DD/YYYY')
