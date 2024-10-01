@@ -25,7 +25,7 @@ AND BLOCK_TIMESTAMP < CURRENT_DATE
 AND BLOCK_TIMESTAMP >= CURRENT_DATE - interval '1 day'
 INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m
 ON m.NAME = c.NAME 
-AND m.chain = 'Arbitrum One')
+AND m.chain IN ('Arbitrum One', 'Arbitrum Orbit'))
 
 SELECT 
 grantee_day_active_wallets AS day_active_wallets,
@@ -56,7 +56,7 @@ AND BLOCK_TIMESTAMP < CURRENT_DATE
 AND BLOCK_TIMESTAMP >= CURRENT_DATE - interval '7 day'
 INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m
 ON m.NAME = c.NAME 
-AND m.chain = 'Arbitrum One')
+AND m.chain IN ('Arbitrum One', 'Arbitrum Orbit'))
 
 SELECT 
 grantee_week_active_wallets AS week_active_wallets,
@@ -87,7 +87,7 @@ AND BLOCK_TIMESTAMP < CURRENT_DATE
 AND BLOCK_TIMESTAMP >= CURRENT_DATE - interval '1 month'
 INNER JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m
 ON m.NAME = c.NAME 
-AND m.chain = 'Arbitrum One')
+AND m.chain IN ('Arbitrum One', 'Arbitrum Orbit'))
 
 SELECT 
 grantee_month_active_wallets AS month_active_wallets,
