@@ -22,7 +22,7 @@ WITH time_settings AS (
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP < (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP >= (SELECT two_period_ago FROM time_settings) THEN t.HASH END) AS txns_previous,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.FROM_ADDRESS END) AS active_accounts_current,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP < (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP >= (SELECT two_period_ago FROM time_settings) THEN t.FROM_ADDRESS END) AS active_accounts_previous,
-        SUM(CASE WHEN t.BLOCK_TIMESTAMP >= (SELECT one_period_ago FROM time_settings) THEN ((t.RECEIPT_EFFECTIVE_GAS_PRICE * t.RECEIPT_GAS_USED)/1e18) END) AS gas_spend_current,
+        SUM(CASE WHEN t.BLOCK_TIMESTAMP >= (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN ((t.RECEIPT_EFFECTIVE_GAS_PRICE * t.RECEIPT_GAS_USED)/1e18) END) AS gas_spend_current,
         SUM(CASE WHEN t.BLOCK_TIMESTAMP < (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP >= (SELECT two_period_ago FROM time_settings) THEN ((t.RECEIPT_EFFECTIVE_GAS_PRICE * t.RECEIPT_GAS_USED)/1e18) END) AS gas_spend_previous
     FROM ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m  
     LEFT JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_CONTRACTS l
