@@ -19,6 +19,7 @@ WITH time_settings AS (
         m.LOGO,
         m.CHAIN, 
         m.GRANT_DATE,
+        COUNT(l.CONTRACT_ADDRESS) AS NUM_CONTRACTS,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.HASH END) AS txns_current,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP < (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP >= (SELECT two_period_ago FROM time_settings) THEN t.HASH END) AS txns_previous,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.FROM_ADDRESS END) AS active_accounts_current,
@@ -29,7 +30,6 @@ WITH time_settings AS (
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= DATE(m.GRANT_DATE) THEN t.HASH END) AS transactions_since_grant,
         SUM((t.RECEIPT_EFFECTIVE_GAS_PRICE * t.RECEIPT_GAS_USED)/1e18) AS total_eth_fees,
         SUM(CASE WHEN t.BLOCK_TIMESTAMP >= DATE(m.GRANT_DATE) THEN ((t.RECEIPT_EFFECTIVE_GAS_PRICE * t.RECEIPT_GAS_USED)/1e18) END) AS eth_fees_since_grant
-        
     FROM ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_METADATA m  
     LEFT JOIN ARBIGRANTS.DBT.ARBIGRANTS_LABELS_PROJECT_CONTRACTS l
     ON m.NAME = l.NAME 
@@ -89,6 +89,7 @@ slug,
 logo,
 chain,
 grant_date,
+CASE WHEN num_contracts = 0 THEN false ELSE true END AS has_contracts,
 COALESCE(ad.gas_spend_current,0) as ETH_FEES,
 CASE 
     WHEN ad.gas_spend_previous > 0 THEN (100 * (COALESCE(ad.gas_spend_current,0) - COALESCE(ad.gas_spend_previous,0)) / COALESCE(ad.gas_spend_previous,0)) 

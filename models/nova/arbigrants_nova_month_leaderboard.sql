@@ -18,6 +18,7 @@ WITH time_settings AS (
         m.LOGO,
         m.CHAIN, 
         m.GRANT_DATE,
+        COUNT(l.CONTRACT_ADDRESS) AS NUM_CONTRACTS,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.HASH END) AS txns_current,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP < (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP >= (SELECT two_period_ago FROM time_settings) THEN t.HASH END) AS txns_previous,
         COUNT(DISTINCT CASE WHEN t.BLOCK_TIMESTAMP >= (SELECT one_period_ago FROM time_settings) AND t.BLOCK_TIMESTAMP < CURRENT_DATE THEN t.FROM_ADDRESS END) AS active_accounts_current,
@@ -88,6 +89,7 @@ slug,
 logo,
 chain,
 grant_date,
+CASE WHEN num_contracts = 0 THEN false ELSE true END AS has_contracts,
 COALESCE(ad.gas_spend_current,0) as ETH_FEES,
 CASE 
     WHEN ad.gas_spend_previous > 0 THEN (100 * (COALESCE(ad.gas_spend_current,0) - COALESCE(ad.gas_spend_previous,0)) / COALESCE(ad.gas_spend_previous,0)) 
