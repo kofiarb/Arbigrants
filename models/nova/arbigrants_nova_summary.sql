@@ -98,14 +98,7 @@ FROM all_txns, grantee_txns
 ),
 
 stats_tvl AS (
-WITH all_tvl AS (
-SELECT 
-TVL AS tvl_all
-FROM ARBIGRANTS.DBT.ARBIGRANTS_ONE_TOTAL_TVL
-WHERE DATE = current_date
-),
-
-grantee_tvl AS (
+WITH grantee_tvl AS (
 SELECT 
 SUM(TOTAL_LIQUIDITY_USD) AS tvl_grantees
 FROM (
@@ -124,9 +117,8 @@ WHERE rn = 1
 )
 
 SELECT 
-COALESCE(tvl_grantees,0) as tvl_grantees,
-COALESCE(tvl_grantees/tvl_all, 0) as pct_tvl
-FROM all_tvl, grantee_tvl
+COALESCE(tvl_grantees,0) as tvl_grantees
+FROM grantee_tvl
 )
 
 SELECT * FROM stats_24h, stats_7d, stats_1m, stats_tvl
