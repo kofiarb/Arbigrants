@@ -46,14 +46,8 @@ FROM
     WHERE BLOCK_TIMESTAMP < CURRENT_DATE
     AND BLOCK_TIMESTAMP >= CURRENT_DATE - interval '1 month')
 
-    , tvl_stats AS (
-    SELECT 
-    TVL AS arbone_tvl
-    FROM ARBIGRANTS.DBT.ARBIGRANTS_ONE_TOTAL_TVL
-    WHERE DATE = current_date
-    )
 
-    SELECT * FROM day_stats, week_stats, month_stats, tvl_stats
+    SELECT * FROM day_stats, week_stats, month_stats
 )
 
 SELECT 
@@ -69,6 +63,5 @@ MONTH_ACTIVE_WALLETS,
 MONTH_ACTIVE_WALLETS/(SELECT arbone_month_active_wallets FROM total) AS PCT_MONTH_ACTIVE_WALLETS,
 MONTH_GAS_SPEND,
 MONTH_GAS_SPEND/(SELECT arbone_month_gas_spend FROM total) AS PCT_MONTH_GAS_SPEND,
-TVL_GRANTEES,
-TVL_GRANTEES/(SELECT arbone_tvl FROM total) AS PCT_TVL
+TVL_GRANTEES
 FROM grantees
